@@ -49,17 +49,17 @@
 
     return this.each(function () {
       // Setup time. Clone new elements from our templates, set some IDs, make shortcuts, jazzercise.
-      var element = $(this),
-        opts = $.extend({}, $.fn.colorPicker.defaults, options),
-        defaultColor = $.fn.colorPicker.toHex(
-          (element.val().length > 0) ? element.val(): opts.pickerDefault
-        ),
-        newControl = templates.control.clone(),
-        newPalette = templates.palette.clone().attr('id', 'colorPicker_palette-' + cItterate),
-        newHexLabel = templates.hexLabel.clone(),
-        newHexField = templates.hexField.clone(),
-        paletteId = newPalette[0].id,
-        swatch;
+      var element = $(this);
+      var opts = $.extend({}, $.fn.colorPicker.defaults, options);
+      var defaultColor = $.fn.colorPicker.toHex(
+        (element.val().length > 0) ? element.val(): opts.pickerDefault
+      );
+      var newControl = templates.control.clone();
+      var newPalette = templates.palette.clone().attr('id', 'colorPicker_palette-' + cItterate);
+      var newHexLabel = templates.hexLabel.clone();
+      var newHexField = templates.hexField.clone();
+      var paletteId = newPalette[0].id;
+      var swatch;
 
 
       /**
