@@ -29,18 +29,18 @@
   /**
    * Create a couple private variables.
   **/
-  var selectorOwner,
-    activePalette,
-    cItterate = 0,
-    templates = {
-      control: $('<div class="colorPicker-picker">&nbsp;</div>'),
-      palette: $('<div id="colorPicker_palette" class="colorPicker-palette" />'),
-      swatch : $('<div class="colorPicker-swatch">&nbsp;</div>'),
-      hexLabel: $('<label for="colorPicker_hex">Hex</label>'),
-      hexField: $('<input type="text" id="colorPicker_hex" />')
-    },
-    transparent = "transparent",
-    lastColor;
+  var selectorOwner;
+  var activePalette;
+  var cItterate = 0;
+  var templates = {
+    control: $('<div class="colorPicker-picker">&nbsp;</div>'),
+    palette: $('<div id="colorPicker_palette" class="colorPicker-palette" />'),
+    swatch : $('<div class="colorPicker-swatch">&nbsp;</div>'),
+    hexLabel: $('<label for="colorPicker_hex">Hex</label>'),
+    hexField: $('<input type="text" id="colorPicker_hex" />')
+  };
+  var transparent = "transparent";
+  var lastColor;
 
   /**
    * Create our colorPicker function
