@@ -36,7 +36,7 @@
     control: $('<div class="colorPicker-picker add-on">&nbsp;</div>'),
     palette: $('<div id="colorPicker_palette" class="colorPicker-palette dropdown-menu" />'),
     swatch : $('<div class="colorPicker-swatch">&nbsp;</div>'),
-    hexField: $('<input type="text" id="colorPicker-addSwatchContainer" />')
+    hexField: $('<input type="text" class="colorPicker-addSwatchInput" />')
   };
   var transparent = "transparent";
   var lastColor;
@@ -75,7 +75,7 @@
 
 
       newHexField.attr({
-        id: 'colorPicker-addSwatchContainer-' + cItterate,
+        id: 'colorPicker-addSwatchInput-' + cItterate,
         value: initialColor
       });
 
