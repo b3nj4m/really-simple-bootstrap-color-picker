@@ -33,11 +33,10 @@
   var activePalette;
   var cItterate = 0;
   var templates = {
-    control: $('<div class="colorPicker-picker">&nbsp;</div>'),
-    palette: $('<div id="colorPicker_palette" class="colorPicker-palette" />'),
+    control: $('<div class="colorPicker-picker add-on">&nbsp;</div>'),
+    palette: $('<div id="colorPicker_palette" class="colorPicker-palette dropdown-menu" />'),
     swatch : $('<div class="colorPicker-swatch">&nbsp;</div>'),
-    hexLabel: $('<label for="colorPicker_hex">Hex</label>'),
-    hexField: $('<input type="text" id="colorPicker_hex" />')
+    hexField: $('<input type="text" id="colorPicker-addSwatchContainer" />')
   };
   var transparent = "transparent";
   var lastColor;
@@ -51,16 +50,12 @@
       // Setup time. Clone new elements from our templates, set some IDs, make shortcuts, jazzercise.
       var element = $(this);
       var opts = $.extend({}, $.fn.colorPicker.defaults, options);
-      var defaultColor = $.fn.colorPicker.toHex(
-        (element.val().length > 0) ? element.val(): opts.pickerDefault
-      );
+      var initialColor = $.fn.colorPicker.toHex(element.val() || opts.pickerDefault);
       var newControl = templates.control.clone();
       var newPalette = templates.palette.clone().attr('id', 'colorPicker_palette-' + cItterate);
-      var newHexLabel = templates.hexLabel.clone();
       var newHexField = templates.hexField.clone();
       var paletteId = newPalette[0].id;
       var swatch;
-
 
       /**
        * Build a color palette.
@@ -78,11 +73,10 @@
         swatch.appendTo(newPalette);
       });
 
-      newHexLabel.attr('for', 'colorPicker_hex-' + cItterate);
 
       newHexField.attr({
-        id: 'colorPicker_hex-' + cItterate,
-        value: defaultColor
+        id: 'colorPicker-addSwatchContainer-' + cItterate,
+        value: initialColor
       });
 
       newHexField.bind("keydown", function (event) {
@@ -100,9 +94,7 @@
         $.fn.colorPicker.previewColor(hexColor ? hexColor: element.val());
       });
 
-      $('<div class="colorPicker_hexWrap" />').append(newHexLabel).appendTo(newPalette);
-
-      newPalette.find('.colorPicker_hexWrap').append(newHexField);
+      $('<div class="colorPicker-addSwatchContainer" />').append(newHexField).appendTo(newPalette);
 
       $("body").append(newPalette);
 
@@ -112,7 +104,7 @@
       /**
        * Build replacement interface for original color input.
       **/
-      newControl.css("background-color", defaultColor);
+      newControl.css("background-color", initialColor);
 
       newControl.bind("click", function () {
         if (element.is(':not(:disabled)')) {
@@ -120,6 +112,7 @@
         }
       });
 
+      //TODO remove onColorChange, instead emit colorPicker:change on the input element
       if (options && options.onColorChange) {
         newControl.data('onColorChange', options.onColorChange);
       } else {
@@ -133,8 +126,7 @@
         );
       });
 
-      // Hide the original input.
-      element.val(defaultColor).hide();
+      element.val(initialColor);
 
       cItterate++;
     });
@@ -260,6 +252,7 @@
     **/
     previewColor: function (value) {
       selectorOwner.css("background-color", value);
+      //TODO emit colorPicker:preview when previewing a color
     },
 
     /**
