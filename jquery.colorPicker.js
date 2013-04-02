@@ -91,7 +91,8 @@
       if (this.opts.colors[i] === transparent) {
         swatch.addClass(transparent).text('X');
         $.fn.colorPicker.bindPalette(self.hexField, swatch, transparent);
-      } else {
+      }
+      else {
         swatch.css("background-color", "#" + this);
         $.fn.colorPicker.bindPalette(self.hexField, swatch);
       }
@@ -158,7 +159,8 @@
       return (color.charAt(0) === "#") ? color: ("#" + color);
 
     // Alternatively, check for RGB color, then convert and return it as Hex.
-    } else if (color.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/)) {
+    }
+    else if (color.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/)) {
       var c = ([parseInt(RegExp.$1, 10), parseInt(RegExp.$2, 10), parseInt(RegExp.$3, 10)]),
         pad = function(str) {
           if (str.length < 2) {
@@ -179,7 +181,8 @@
       }
 
     // Otherwise we wont do anything.
-    } else {
+    }
+    else {
       return false;
     }
   };
@@ -239,7 +242,8 @@
     if (activePalette.is(':visible')) {
       $.fn.colorPicker.hidePalette();
 
-    } else {
+    } 
+    else {
       $.fn.colorPicker.showPalette(palette);
 
     }
