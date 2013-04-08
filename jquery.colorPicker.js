@@ -34,118 +34,101 @@
   }());
 
   /**
-   * Create a couple private variables.
-  **/
-  var selectorOwner;
-  var activePalette;
-  var templates = {
-    container: $('<div class="colorPicker-addSwatchContainer" />'),
-    control: $('<div class="colorPicker-picker add-on">&nbsp;</div>'),
-    palette: $('<div class="colorPicker-palette dropdown-menu" />'),
-    swatch : $('<div class="colorPicker-swatch">&nbsp;</div>'),
-    hexField: $('<input type="text" class="colorPicker-addSwatchInput" />'),
-    hexButton: $('<input type="button" class="btn colorPicker-addSwatchButton" />')
-  };
-  var transparent = "transparent";
-  var lastColor;
-
-  /**
    * Create our colorPicker function
   **/
   $.fn.colorPicker = function(options) {
     return this.each(function() {
-      var colorPicker = new ColorPicker(this);
-      this.data('colorPicker', colorPicker);
+      var colorPicker = new ColorPicker(this, options);
+      $(this).data('colorPicker', colorPicker);
     });
-  });
+  };
 
-  var ColorPicker = function(input) {
+  var ColorPicker = function(input, options) {
 
     var self = this;
 
     // Setup time. Clone new elements from our templates, set some IDs, make shortcuts, jazzercise.
     this.element = $(input);
-    this.opts = $.extend({}, $.fn.colorPicker.defaults, options);
-    this.initialColor = $.fn.colorPicker.toHex(this.element.val() || this.opts.pickerDefault);
-    this.container = templates.container.clone();
-    this.control = templates.control.clone();
-    this.palette = templates.palette.clone();
-    this.hexField = templates.hexField.clone();
-    this.hexButton = templates.hexButton.clone();
+    this.opts = $.extend({}, this.defaults, options);
+    this.initialColor = this.toHex(this.element.val() || this.opts.pickerDefault);
+    this.container = this.templates.container.clone();
+    this.control = this.templates.control.clone();
+    this.palette = this.templates.palette.clone();
+    this.hexField = this.templates.hexField.clone();
+    this.addSwatchButton = this.templates.addSwatchButton.clone();
     this.paletteId = 'colorPicker-palette-' + uniqueId();
-    this.swatch;
 
-    this.palette.attr('id', paletteId);
+    this.buildPalette(this.opts.colors);
+
+    this.palette.attr('id', this.paletteId);
 
     this.hexField.attr({
       id: 'colorPicker-addSwatchInput-' + uniqueId(),
       value: this.initialColor
     });
 
-    /**
-     * Build a color palette.
-    **/
-    $.each(this.opts.colors, function(i) {
-      swatch = templates.swatch.clone();
+    this.hexField.on("keydown", $.proxy(this.hexFieldKeydown, this));
+    this.hexField.on("keyup", $.proxy(this.hexFieldKeyup, this));
 
-      if (this.opts.colors[i] === transparent) {
-        swatch.addClass(transparent).text('X');
-        $.fn.colorPicker.bindPalette(self.hexField, swatch, transparent);
-      }
-      else {
-        swatch.css("background-color", "#" + this);
-        $.fn.colorPicker.bindPalette(self.hexField, swatch);
-      }
-      swatch.appendTo(self.palette);
-    });
+    this.addSwatchButton.on("click", $.proxy(this.addSwatchClick, this));
 
-    this.hexField.on("keydown", function(event) {
-      if (event.keyCode === 13) {
-        var hexColor = $.fn.colorPicker.toHex($(this).val());
-        $.fn.colorPicker.changeColor(hexColor ? hexColor: self.element.val());
-      }
-      if (event.keyCode === 27) {
-        $.fn.colorPicker.hidePalette();
-      }
-    });
+    this.element.on("change", $.proxy(this.inputChange, this));
+    this.element.val(this.initialColor);
 
-    this.hexField.on("keyup", function(event) {
-      var hexColor = $.fn.colorPicker.toHex($(event.target).val());
-      $.fn.colorPicker.previewColor(hexColor ? hexColor: self.element.val());
-    });
-
-    this.hexButton.on("click", function(event) {
-      console.log('nope');
-    });
+    this.control.css("background-color", this.initialColor);
+    this.control.on("click", $.proxy(this.controlClick, this));
 
     this.container.append(this.hexField);
-    this.container.append(this.hexButton);
+    this.container.append(this.addSwatchButton);
     this.container.appendTo(this.palette);
 
-    $("body").append(this.palette);
-
     this.palette.hide();
-
-    /**
-     * Build replacement interface for original color input.
-    **/
-    this.control.css("background-color", this.initialColor);
-
-    this.control.on("click", function() {
-      if (self.element.is(':not(:disabled)')) {
-        $.fn.colorPicker.togglePalette($('#' + self.paletteId), $(this));
-      }
-    });
+    $(document.body).append(this.palette);
 
     this.element.before(this.control);
+  };
 
-    this.element.on("change", function() {
-      var value = $.fn.colorPicker.toHex($(this).val());
-      this.element.prev2(".colorPicker-picker").css("background-color", value);
-      this.element.trigger('colorPicker:change', value);
-    });
+  ColorPicker.prototype.hexFieldKeydown = function(event) {
+    if (event.keyCode === 13) {
+      var hexColor = this.toHex($(event.target).val());
+      this.changeColor(hexColor ? hexColor: this.element.val());
+    }
+    if (event.keyCode === 27) {
+      this.hidePalette();
+    }
+  };
 
-    this.element.val(this.initialColor);
+  ColorPicker.prototype.hexFieldKeyup = function(event) {
+    var hexColor = this.toHex($(event.target).val());
+    this.previewColor(hexColor ? hexColor: this.element.val());
+  };
+
+  ColorPicker.prototype.addSwatchClick = function(event) {
+    console.log('nope');
+  };
+
+  ColorPicker.prototype.controlClick = function(event) {
+    if (this.element.not(':disabled')) {
+      this.togglePalette($('#' + this.paletteId), $(event.target));
+    }
+  };
+
+  ColorPicker.prototype.inputChange = function(event) {
+    var value = this.toHex($(event.target).val());
+    this.element.prev(".colorPicker-picker").css("background-color", value);
+    this.element.trigger('colorPicker:change', value);
+  };
+
+  ColorPicker.prototype.swatchClick = function(event) {
+    this.changeColor($(event.target).data('color'));
+  };
+
+  ColorPicker.prototype.swatchMouseover = function(event) {
+    this.previewColor($(event.target).data('color'));
+  };
+
+  ColorPicker.prototype.swatchMouseout = function(event) {
+    this.previewColor(this.element.val());
   };
 
   /**
@@ -191,60 +174,51 @@
    * Check whether user clicked on the selector or owner.
   **/
   ColorPicker.prototype.checkMouse = function(event, paletteId) {
-    var selector = activePalette;
-    var selectorParent = $(event.target).parents("#" + selector.attr('id')).length;
+    var selectorParent = $(event.target).parents("#" + this.palette.attr('id')).length;
 
-    if (event.target === $(selector)[0] || event.target === selectorOwner[0] || selectorParent > 0) {
+    if (event.target === $(this.palette)[0] || event.target === this.element[0] || selectorParent > 0) {
       return;
     }
 
-    $.fn.colorPicker.hidePalette();
+    this.hidePalette();
   };
 
   /**
    * Hide the color palette modal.
   **/
   ColorPicker.prototype.hidePalette = function() {
-    $(document).off("mousedown", $.fn.colorPicker.checkMouse);
+    //TODO get rid of this checkmouse bs
+    $(document).off("mousedown", $.proxy(this.checkMouse, this));
 
-    $('.colorPicker-palette').hide();
+    this.palette.hide();
   };
 
   /**
    * Show the color palette modal.
   **/
-  ColorPicker.prototype.showPalette = function(palette) {
-    var hexColor = selectorOwner.next("input").val();
+  ColorPicker.prototype.showPalette = function() {
+    var hexColor = this.element.val();
 
-    palette.css({
-      top: selectorOwner.offset().top + (selectorOwner.outerHeight()),
-      left: selectorOwner.offset().left
+    var offset = this.element.offset();
+    this.palette.css({
+      top: offset.top + (this.element.outerHeight()),
+      left: offset.left
     });
 
-    $("#color_value").val(hexColor);
+    this.palette.show();
 
-    palette.show();
-
-    $(document).on("mousedown", $.fn.colorPicker.checkMouse);
+    $(document).on("mousedown", $.proxy(this.checkMouse, this));
   };
 
   /**
    * Toggle visibility of the colorPicker palette.
   **/
   ColorPicker.prototype.togglePalette = function(palette, origin) {
-    // selectorOwner is the clicked .colorPicker-picker.
-    if (origin) {
-      selectorOwner = origin;
-    }
-
-    activePalette = palette;
-
-    if (activePalette.is(':visible')) {
-      $.fn.colorPicker.hidePalette();
-
+    if (this.palette.is(':visible')) {
+      this.hidePalette();
     } 
     else {
-      $.fn.colorPicker.showPalette(palette);
+      this.showPalette(palette);
 
     }
   };
@@ -253,63 +227,64 @@
    * Update the input with a newly selected color.
   **/
   ColorPicker.prototype.changeColor = function(value) {
-    selectorOwner.css("background-color", value);
-    selectorOwner.next("input").val(value).change();
+    this.control.css("background-color", value);
+    this.element.val(value).change();
 
-    $.fn.colorPicker.hidePalette();
-
-    selectorOwner.data('onColorChange').call(selectorOwner, $(selectorOwner).next("input").attr("id"), value);
+    this.hidePalette();
   };
 
   /**
    * Preview the input with a newly selected color.
   **/
   ColorPicker.prototype.previewColor = function(value) {
-    selectorOwner.css("background-color", value);
-    //TODO emit colorPicker:preview when previewing a color
+    this.hexField.val(value);
+    this.control.css("background-color", value);
+    this.element.trigger('colorPicker:preview', value);
   };
 
   /**
-   * Bind events to the color palette swatches.
-  */
-  ColorPicker.prototype.bindPalette = function(paletteInput, element, color) {
-    color = color ? color: $.fn.colorPicker.toHex(element.css("background-color"));
+   * Build a color palette.
+  **/
+  ColorPicker.prototype.buildPalette = function(colors) {
+    var self = this;
+    var swatch;
+    var color;
+    $.each(colors, function(i) {
+      swatch = self.templates.swatch.clone();
 
-    element.on({
-      click: function(ev) {
-        lastColor = color;
-
-        $.fn.colorPicker.changeColor(color);
-      },
-      mouseover: function(ev) {
-        lastColor = paletteInput.val();
-
-        $(this).css("border-color", "#598FEF");
-
-        paletteInput.val(color);
-
-        $.fn.colorPicker.previewColor(color);
-      },
-      mouseout: function(ev) {
-        $(this).css("border-color", "#000");
-
-        paletteInput.val(selectorOwner.css("background-color"));
-
-        paletteInput.val(lastColor);
-
-        $.fn.colorPicker.previewColor(lastColor);
+      if (colors[i] === 'transparent') {
+        color = 'transparent';
+        swatch.text('X');
       }
+      else
+        color = self.toHex(colors[i]);
+
+      swatch.data('color', color);
+      swatch.css('background', color);
+
+      swatch.on({
+        click: $.proxy(self.swatchClick, self),
+        mouseover: $.proxy(self.swatchMouseover, self),
+        mouseout: $.proxy(self.swatchMouseout, self)
+      });
+
+      swatch.appendTo(self.palette);
     });
+  };
+
+  ColorPicker.prototype.templates = {
+    container: $('<div class="colorPicker-addSwatchContainer" />'),
+    control: $('<div class="colorPicker-picker add-on">&nbsp;</div>'),
+    palette: $('<div class="colorPicker-palette dropdown-menu" />'),
+    swatch : $('<div class="colorPicker-swatch">&nbsp;</div>'),
+    hexField: $('<input type="text" class="input-small colorPicker-addSwatchInput" />'),
+    addSwatchButton: $('<input type="button" class="btn colorPicker-addSwatchButton" value="add" />')
   };
 
   /**
    * Default colorPicker options.
    *
-   * These are publibly available for global modification using a setting such as:
-   *
-   * $.fn.colorPicker.defaults.colors = ['151337', '111111']
-   *
-   * They can also be applied on a per-bound element basis like so:
+   * They can be applied on a per-bound element basis like so:
    *
    * $('#element1').colorPicker({pickerDefault: 'efefef', transparency: true});
    * $('#element2').colorPicker({pickerDefault: '333333', colors: ['333333', '111111']});

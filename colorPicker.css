@@ -1,4 +1,4 @@
-.colorPicker-picker {
+.input-prepend .colorPicker-picker.add-on, .input-append .colorPicker-picker.add-on, .colorPicker-picker {
   height: 28px;
   width: 28px;
   padding: 0 !important;
@@ -12,7 +12,7 @@
   -o-box-shadow: 0px 1px 1px rgba(0, 0, 0, 0.075) inset;
 }
 
-.colorPicker-palette {
+.colorPicker-palette, .colorPicker-palette.dropdown-menu {
   width: 216px;
   position: absolute;
   background-color: white;
@@ -20,7 +20,7 @@
   z-index: 9999;
 }
 
-.colorPicker-swatch {
+.colorPicker-palette .colorPicker-swatch {
   height: 18px;
   width: 18px;
   display: inline-block;
