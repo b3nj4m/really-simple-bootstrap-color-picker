@@ -302,7 +302,7 @@
     addSwatchButton: $('<input type="button" class="btn colorPicker-addSwatchButton" value="add" />')
   };
 
-  ColorPicker.prototype.customColorsKey = 'jquery.colorPicker.customColors';
+  ColorPicker.prototype.customColorsKey = 'jquery.reallySimpleBootstrapColorPicker.customColors';
 
   try {
     ColorPicker.prototype.supportsLocalStorage = ('localStorage' in window && window['localStorage'] !== null);

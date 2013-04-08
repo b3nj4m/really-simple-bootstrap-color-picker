@@ -1,5 +1,5 @@
 $(function() {
-  var defaultValue = '#000000';
+  var defaultValue = '#CCFFFF';
 
   var $elem = $('#color');
   $elem.colorPicker({pickerDefault: defaultValue});
