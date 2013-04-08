@@ -1,6 +1,6 @@
 $(function() {
   var $elem = $('#color');
-  $elem.colorPicker({pickerDefault: '#CCFFFF'});
+  $elem.colorPicker({pickerDefault: '#99CCFF'});
 
   $target = $elem.parents('.control-group:first').find('label:first');
 
