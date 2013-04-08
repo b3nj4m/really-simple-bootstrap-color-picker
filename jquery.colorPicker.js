@@ -33,13 +33,16 @@
     };
   }());
 
+  var isArray = window.Array.isArray || function(obj) {
+    return window.toString.call(obj) == '[object Array]';
+  };
+
   /**
    * Create our colorPicker function
   **/
   $.fn.colorPicker = function(options) {
     return this.each(function() {
-      var colorPicker = new ColorPicker(this, options);
-      $(this).data('colorPicker', colorPicker);
+      $(this).data('colorPicker', new ColorPicker(this, options));
     });
   };
 
@@ -49,8 +52,8 @@
 
     // Setup time. Clone new elements from our templates, set some IDs, make shortcuts, jazzercise.
     this.element = $(input);
-    this.opts = $.extend({}, this.defaults, options);
-    this.initialColor = this.toHex(this.element.val() || this.opts.pickerDefault);
+    this.options = $.extend({}, this.defaults, options);
+    this.initialColor = this.toHex(this.element.val() || this.options.pickerDefault);
     this.container = this.templates.container.clone();
     this.control = this.templates.control.clone();
     this.palette = this.templates.palette.clone();
@@ -58,7 +61,7 @@
     this.addSwatchButton = this.templates.addSwatchButton.clone();
     this.paletteId = 'colorPicker-palette-' + uniqueId();
 
-    this.buildPalette(this.opts.colors);
+    this.buildPalette(this.options.colors);
 
     this.palette.attr('id', this.paletteId);
 
@@ -99,12 +102,44 @@
   };
 
   ColorPicker.prototype.hexFieldKeyup = function(event) {
-    var hexColor = this.toHex($(event.target).val());
-    this.previewColor(hexColor ? hexColor: this.element.val());
+    var hexColor = this.toHex($(event.target).val()) || this.element.val();
+    this.previewColor(hexColor, false);
+  };
+
+  ColorPicker.prototype.createSwatch = function(color) {
+    swatch = this.templates.swatch.clone();
+
+    if (color === 'transparent') {
+      swatch.text('X');
+    }
+    else
+      color = this.toHex(color);
+
+    swatch.data('color', color);
+    swatch.css('background', color);
+
+    swatch.on({
+      click: $.proxy(this.swatchClick, this),
+      mouseover: $.proxy(this.swatchMouseover, this),
+      mouseout: $.proxy(this.swatchMouseout, this)
+    });
+
+    return swatch;
   };
 
   ColorPicker.prototype.addSwatchClick = function(event) {
-    console.log('nope');
+    var value = this.toHex(this.hexField.val());
+    if (value === false || this.options.colors.indexOf(value) !== -1 || this.customColors.indexOf(value) !== -1)
+      return;
+
+    var newSwatch = this.createSwatch(value);
+    $(event.target).parent().before(newSwatch);
+
+    this.customColors.push(value);
+
+    if (this.supportsLocalStorage) {
+      window.localStorage[this.customColorsKey] = window.JSON.stringify(this.customColors);
+    }
   };
 
   ColorPicker.prototype.controlClick = function(event) {
@@ -187,7 +222,7 @@
    * Hide the color palette modal.
   **/
   ColorPicker.prototype.hidePalette = function() {
-    //TODO get rid of this checkmouse bs
+    //TODO better solution than checkMouse?
     $(document).off("mousedown", $.proxy(this.checkMouse, this));
 
     this.palette.hide();
@@ -236,8 +271,9 @@
   /**
    * Preview the input with a newly selected color.
   **/
-  ColorPicker.prototype.previewColor = function(value) {
-    this.hexField.val(value);
+  ColorPicker.prototype.previewColor = function(value, setHexFieldValue) {
+    if (setHexFieldValue === undefined || setHexFieldValue === true)
+      this.hexField.val(value);
     this.control.css("background-color", value);
     this.element.trigger('colorPicker:preview', value);
   };
@@ -248,28 +284,13 @@
   ColorPicker.prototype.buildPalette = function(colors) {
     var self = this;
     var swatch;
-    var color;
-    $.each(colors, function(i) {
-      swatch = self.templates.swatch.clone();
-
-      if (colors[i] === 'transparent') {
-        color = 'transparent';
-        swatch.text('X');
-      }
-      else
-        color = self.toHex(colors[i]);
-
-      swatch.data('color', color);
-      swatch.css('background', color);
-
-      swatch.on({
-        click: $.proxy(self.swatchClick, self),
-        mouseover: $.proxy(self.swatchMouseover, self),
-        mouseout: $.proxy(self.swatchMouseout, self)
-      });
-
+    var callback = function(i, color) {
+      swatch = self.createSwatch(color);
       swatch.appendTo(self.palette);
-    });
+    };
+
+    $.each(colors, callback);
+    $.each(this.customColors, callback);
   };
 
   ColorPicker.prototype.templates = {
@@ -280,6 +301,34 @@
     hexField: $('<input type="text" class="input-small colorPicker-addSwatchInput" />'),
     addSwatchButton: $('<input type="button" class="btn colorPicker-addSwatchButton" value="add" />')
   };
+
+  ColorPicker.prototype.customColorsKey = 'jquery.colorPicker.customColors';
+
+  try {
+    ColorPicker.prototype.supportsLocalStorage = ('localStorage' in window && window['localStorage'] !== null);
+  }
+  catch (err) {
+    ColorPicker.prototype.supportsLocalStorage = false;
+  }
+
+  try {
+    ColorPicker.prototype.supportsJSON = ('JSON' in window && window['JSON'] !== null);
+  }
+  catch (err) {
+    ColorPicker.prototype.supportsJSON = false;
+  }
+
+  if (ColorPicker.prototype.supportsLocalStorage && ColorPicker.prototype.supportsJSON) {
+    try {
+      ColorPicker.prototype.customColors = window.JSON.parse(window.localStorage[ColorPicker.prototype.customColorsKey]);
+    }
+    catch (err) {
+    }
+  }
+  if (ColorPicker.prototype.customColors === undefined || !isArray(ColorPicker.prototype.customColors)) {
+    ColorPicker.prototype.customColors = [];
+    window.localStorage[ColorPicker.prototype.customColorsKey] = window.JSON.stringify(ColorPicker.prototype.customColors);
+  }
 
   /**
    * Default colorPicker options.
@@ -292,16 +341,16 @@
   **/
   ColorPicker.prototype.defaults = {
     // colorPicker default selected color.
-    pickerDefault: "FFFFFF",
+    pickerDefault: "#FFFFFF",
 
     // Default color set.
     colors: [
-      '000000', '993300', '333300', '000080', '333399', '333333', '800000', 'FF6600',
-      '808000', '008000', '008080', '0000FF', '666699', '808080', 'FF0000', 'FF9900',
-      '99CC00', '339966', '33CCCC', '3366FF', '800080', '999999', 'FF00FF', 'FFCC00',
-      'FFFF00', '00FF00', '00FFFF', '00CCFF', '993366', 'C0C0C0', 'FF99CC', 'FFCC99',
-      'FFFF99', 'CCFFFF', '99CCFF', 'FFFFFF'
+      '#000000', '#993300', '#333300', '#000080', '#333399', '#333333', '#800000', '#FF6600',
+      '#808000', '#008000', '#008080', '#0000FF', '#666699', '#808080', '#FF0000', '#FF9900',
+      '#99CC00', '#339966', '#33CCCC', '#3366FF', '#800080', '#999999', '#FF00FF', '#FFCC00',
+      '#FFFF00', '#00FF00', '#00FFFF', '#00CCFF', '#993366', '#C0C0C0', '#FF99CC', '#FFCC99',
+      '#FFFF99', '#CCFFFF', '#99CCFF', '#FFFFFF'
     ]
   };
 
-})(jQuery);
+})($);

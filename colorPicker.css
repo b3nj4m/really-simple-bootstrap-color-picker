@@ -30,11 +30,15 @@
   line-height: 12px;
 }
 
-.colorPicker-addSwatchContainer {
+.colorPicker-palette .colorPicker-addSwatchContainer {
   margin-top: 10px;
 }
 
-.colorPicker-addSwatchButton {
+.colorPicker-palette .colorPicker-addSwatchContainer .colorPicker-addSwatchInput {
+  margin-bottom: 0;
+}
+
+.colorPicker-palette .colorPicker-addSwatchContainer .colorPicker-addSwatchButton {
   margin-left: 8px;
   margin-bottom: 5px;
   height: 28px;
