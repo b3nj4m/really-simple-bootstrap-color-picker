@@ -61,14 +61,12 @@
 </pre></div>
 
 <div class="highlight"><pre><span class="nx">$</span><span class="p">(</span><span class="kd">function</span><span class="p">()</span> <span class="p">{</span>
-  <span class="kd">var</span> <span class="nx">defaultValue</span> <span class="o">=</span> <span class="s1">&#39;#99CCFF&#39;</span><span class="p">;</span>
-
   <span class="kd">var</span> <span class="nx">$elem</span> <span class="o">=</span> <span class="nx">$</span><span class="p">(</span><span class="s1">&#39;#color&#39;</span><span class="p">);</span>
-  <span class="nx">$elem</span><span class="p">.</span><span class="nx">colorPicker</span><span class="p">({</span><span class="nx">pickerDefault</span><span class="o">:</span> <span class="nx">defaultValue</span><span class="p">});</span>
+  <span class="nx">$elem</span><span class="p">.</span><span class="nx">colorPicker</span><span class="p">({</span><span class="nx">pickerDefault</span><span class="o">:</span> <span class="s1">&#39;#CCFFFF&#39;</span><span class="p">});</span>
 
   <span class="nx">$target</span> <span class="o">=</span> <span class="nx">$elem</span><span class="p">.</span><span class="nx">parents</span><span class="p">(</span><span class="s1">&#39;.control-group:first&#39;</span><span class="p">).</span><span class="nx">find</span><span class="p">(</span><span class="s1">&#39;label:first&#39;</span><span class="p">);</span>
 
-  <span class="nx">$target</span><span class="p">.</span><span class="nx">css</span><span class="p">(</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="nx">defaultValue</span><span class="p">);</span>
+  <span class="nx">$target</span><span class="p">.</span><span class="nx">css</span><span class="p">(</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="nx">$elem</span><span class="p">.</span><span class="nx">val</span><span class="p">());</span>
 
   <span class="nx">$elem</span><span class="p">.</span><span class="nx">on</span><span class="p">(</span><span class="s1">&#39;colorPicker:preview colorPicker:change&#39;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">e</span><span class="p">,</span> <span class="nx">value</span><span class="p">)</span> <span class="p">{</span>
     <span class="nx">$target</span><span class="p">.</span><span class="nx">css</span><span class="p">(</span><span class="s1">&#39;color&#39;</span><span class="p">,</span> <span class="nx">value</span><span class="p">);</span>

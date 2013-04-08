@@ -1,14 +1,12 @@
 $(function() {
-  var defaultValue = '#99CCFF';
-
   var $elem = $('#color');
-  $elem.colorPicker({pickerDefault: defaultValue});
+  $elem.colorPicker({pickerDefault: '#CCFFFF'});
 
   $target = $elem.parents('.control-group:first').find('label:first');
 
-  $target.css('color', defaultValue);
+  $target.css('color', $elem.val());
 
-  $elem.on('colorPicker:preview colorPicker:change', function(evnt, value) {
+  $elem.on('colorPicker:preview colorPicker:change', function(e, value) {
     $target.css('color', value);
   });
 });
