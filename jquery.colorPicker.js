@@ -118,12 +118,6 @@
     swatch.data('color', color);
     swatch.css('background', color);
 
-    swatch.on({
-      click: $.proxy(this.swatchClick, this),
-      mouseover: $.proxy(this.swatchMouseover, this),
-      mouseout: $.proxy(this.swatchMouseout, this)
-    });
-
     return swatch;
   };
 
@@ -291,6 +285,10 @@
 
     $.each(colors, callback);
     $.each(this.customColors, callback);
+
+    this.palette.on('click', '.colorPicker-swatch', $.proxy(this.swatchClick, this));
+    this.palette.on('mouseover', '.colorPicker-swatch', $.proxy(this.swatchMouseover, this));
+    this.palette.on('mouseout', '.colorPicker-swatch', $.proxy(this.swatchMouseout, this));
   };
 
   ColorPicker.prototype.templates = {
