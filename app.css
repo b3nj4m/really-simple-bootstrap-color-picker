@@ -1,3 +1,11 @@
+section ul {
+  margin-left: 9px;
+}
+section ul li {
+  list-style-position: outside;
+  margin-left: 5px;
+  padding-left: 0;
+}
 .form-horizontal .control-group label.control-label {
   font-size: 1.5em;
 }
