@@ -228,10 +228,11 @@
   ColorPicker.prototype.showPalette = function() {
     var hexColor = this.element.val();
 
-    var offset = this.element.offset();
+    var offset = this.control.offset();
+
     this.palette.css({
-      top: offset.top + (this.element.outerHeight()),
-      left: offset.left
+      top: Math.min(offset.top + this.control.outerHeight(), $(document).height() - this.palette.outerHeight()),
+      left: Math.min(offset.left, $(document).width() - this.palette.outerWidth())
     });
 
     this.palette.show();
