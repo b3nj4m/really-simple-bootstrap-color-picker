@@ -118,12 +118,6 @@
     swatch.data('color', color);
     swatch.css('background', color);
 
-    swatch.on({
-      click: $.proxy(this.swatchClick, this),
-      mouseover: $.proxy(this.swatchMouseover, this),
-      mouseout: $.proxy(this.swatchMouseout, this)
-    });
-
     return swatch;
   };
 
@@ -234,10 +228,11 @@
   ColorPicker.prototype.showPalette = function() {
     var hexColor = this.element.val();
 
-    var offset = this.element.offset();
+    var offset = this.control.offset();
+
     this.palette.css({
-      top: offset.top + (this.element.outerHeight()),
-      left: offset.left
+      top: Math.min(offset.top + this.control.outerHeight(), $(document).height() - this.palette.outerHeight()),
+      left: Math.min(offset.left, $(document).width() - this.palette.outerWidth())
     });
 
     this.palette.show();
@@ -291,6 +286,10 @@
 
     $.each(colors, callback);
     $.each(this.customColors, callback);
+
+    this.palette.on('click', '.colorPicker-swatch', $.proxy(this.swatchClick, this));
+    this.palette.on('mouseover', '.colorPicker-swatch', $.proxy(this.swatchMouseover, this));
+    this.palette.on('mouseout', '.colorPicker-swatch', $.proxy(this.swatchMouseout, this));
   };
 
   ColorPicker.prototype.templates = {
