@@ -9,4 +9,8 @@ $(function() {
   $elem.on('colorPicker:preview colorPicker:change', function(e, value) {
     $target.css('color', value);
   });
+
+  $elem.on('colorPicker:addSwatch', function(e, value) {
+    console.log('added custom swatch with value:', value);
+  });
 });
