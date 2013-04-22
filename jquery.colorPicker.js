@@ -131,7 +131,7 @@
 
     this.customColors.push(value);
 
-	this.element.trigger('colorPicker:addSwatch', value);
+    this.element.trigger('colorPicker:addSwatch', value);
 
     if (this.supportsLocalStorage) {
       window.localStorage[this.customColorsKey] = window.JSON.stringify(this.customColors);

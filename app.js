@@ -11,6 +11,6 @@ $(function() {
   });
 
   $elem.on('colorPicker:addSwatch', function(e, value) {
-	console.log('added custom swatch with value:', value);
+    console.log('added custom swatch with value:', value);
   });
 });
