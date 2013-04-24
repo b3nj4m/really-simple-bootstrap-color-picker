@@ -1,16 +1,18 @@
 $(function() {
-  var $elem = $('#color');
-  $elem.colorPicker({pickerDefault: '#99CCFF'});
+  var $inputs = $('input.color');
+  $inputs.colorPicker({pickerDefault: '#99CCFF'});
 
-  $target = $elem.parents('.control-group:first').find('label:first');
+  $inputs.each(function(idx, item) {
+    var $input = $(item);
+    var $target = $input.parents('.control-group:first').find('label:first');
+    $target.css('color', $input.val());
 
-  $target.css('color', $elem.val());
+    $input.on('colorPicker:preview colorPicker:change', function(e, value) {
+      $target.css('color', value);
+    });
 
-  $elem.on('colorPicker:preview colorPicker:change', function(e, value) {
-    $target.css('color', value);
-  });
-
-  $elem.on('colorPicker:addSwatch', function(e, value) {
-    console.log('added custom swatch with value:', value);
+    $input.on('colorPicker:addSwatch', function(e, value) {
+      //do something with custom color (e.g. persist on the server-side)
+    });
   });
 });
