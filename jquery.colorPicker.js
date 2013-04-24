@@ -60,6 +60,8 @@
     this.hexField = this.templates.hexField.clone();
     this.addSwatchButton = this.templates.addSwatchButton.clone();
     this.paletteId = 'colorPicker-palette-' + uniqueId();
+    //we want our own copy of customColors so that we can delay adding new colors until this picker has rendered the new swatch
+    this.customColors = this.customColors.slice();
 
     this.buildPalette(this.options.colors);
 
@@ -80,6 +82,8 @@
 
     this.control.css("background-color", this.initialColor);
     this.control.on("click", $.proxy(this.controlClick, this));
+
+    $(window).on('colorPicker:addSwatch', $.proxy(this.addSwatch, this));
 
     this.container.append(this.hexField);
     this.container.append(this.addSwatchButton);
@@ -123,15 +127,21 @@
 
   ColorPicker.prototype.addSwatchClick = function(event) {
     var value = this.toHex(this.hexField.val());
+    this.addSwatch(event, value);
+  };
+
+  ColorPicker.prototype.addSwatch = function(event, value) {
     if (value === false || this.options.colors.indexOf(value) !== -1 || this.customColors.indexOf(value) !== -1)
       return;
 
     var newSwatch = this.createSwatch(value);
-    $(event.target).parent().before(newSwatch);
+    this.palette.find('.colorPicker-addSwatchContainer').before(newSwatch);
 
     this.customColors.push(value);
 
     this.element.trigger('colorPicker:addSwatch', value);
+    //also trigger addswatch on window so that other colorpickers can listen for new swatches
+    $(window).trigger('colorPicker:addSwatch', value);
 
     if (this.supportsLocalStorage) {
       window.localStorage[this.customColorsKey] = window.JSON.stringify(this.customColors);
@@ -146,7 +156,7 @@
 
   ColorPicker.prototype.inputChange = function(event) {
     var value = this.toHex($(event.target).val());
-    this.element.prev(".colorPicker-picker").css("background-color", value);
+    this.control.css("background-color", value);
     this.element.trigger('colorPicker:change', value);
   };
 
@@ -246,13 +256,10 @@
    * Toggle visibility of the colorPicker palette.
   **/
   ColorPicker.prototype.togglePalette = function(palette, origin) {
-    if (this.palette.is(':visible')) {
+    if (this.palette.is(':visible'))
       this.hidePalette();
-    } 
-    else {
+    else
       this.showPalette(palette);
-
-    }
   };
 
   /**
