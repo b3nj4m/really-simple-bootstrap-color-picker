@@ -60,7 +60,13 @@
     this.hexField = this.templates.hexField.clone();
     this.addSwatchButton = this.templates.addSwatchButton.clone();
     this.paletteId = 'colorPicker-palette-' + uniqueId();
-    //we want our own copy of customColors so that we can delay adding new colors until this picker has rendered the new swatch
+
+    if (this.options.customColors !== undefined) {
+      //if customColors were explicitly supplied, assume that there is some external system persisting the colors and disable localStorage
+      this.localStorageEnabled = false;
+      this.customColors = this.options.customColors;
+    }
+
     this.customColors = this.customColors.slice();
 
     this.buildPalette(this.options.colors);
@@ -143,7 +149,7 @@
     //also trigger addswatch on window so that other colorpickers can listen for new swatches
     $(window).trigger('colorPicker:addSwatch', value);
 
-    if (this.supportsLocalStorage) {
+    if (this.localStorageEnabled) {
       window.localStorage[this.customColorsKey] = window.JSON.stringify(this.customColors);
     }
   };
@@ -327,12 +333,16 @@
   }
 
   if (ColorPicker.prototype.supportsLocalStorage && ColorPicker.prototype.supportsJSON) {
+    ColorPicker.prototype.localStorageEnabled = true;
     try {
       ColorPicker.prototype.customColors = window.JSON.parse(window.localStorage[ColorPicker.prototype.customColorsKey]);
     }
     catch (err) {
     }
   }
+  else
+    ColorPicker.prototype.localStorageEnabled = false;
+
   if (ColorPicker.prototype.customColors === undefined || !isArray(ColorPicker.prototype.customColors)) {
     ColorPicker.prototype.customColors = [];
     window.localStorage[ColorPicker.prototype.customColorsKey] = window.JSON.stringify(ColorPicker.prototype.customColors);
