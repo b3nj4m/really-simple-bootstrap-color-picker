@@ -56,7 +56,10 @@
     }
 
     return this.each(function() {
-      $(this).data('colorPicker', new ColorPicker(this, options));
+      var $elem = $(this);
+      if (!$elem.data('colorPicker')) {
+        $elem.data('colorPicker', new ColorPicker(this, options));
+      }
     });
   };
 
