@@ -45,7 +45,7 @@
    * Create our colorPicker function
   **/
   $.fn.colorPicker = function(options) {
-    if (isString(options) && options == 'destroy') {
+    if (options === 'destroy') {
       return this.each(function() {
         var picker = $(this).data('colorPicker');
         if (picker) {
@@ -56,7 +56,10 @@
     }
 
     return this.each(function() {
-      $(this).data('colorPicker', new ColorPicker(this, options));
+      var $elem = $(this);
+      if (!$elem.data('colorPicker')) {
+        $elem.data('colorPicker', new ColorPicker(this, options));
+      }
     });
   };
 
@@ -98,9 +101,7 @@
     this.addSwatchButton.on("click.colorPicker", $.proxy(this.addSwatchClick, this));
 
     this.element.on("change.colorPicker", $.proxy(this.inputChange, this));
-    this.element.val(this.initialColor);
 
-    this.control.css("background-color", this.initialColor);
     this.control.on("click.colorPicker", $.proxy(this.controlClick, this));
 
     $(window).on('colorPicker:addSwatch.' + this.id, $.proxy(this.addSwatch, this));
@@ -109,7 +110,8 @@
     this.container.append(this.addSwatchButton);
     this.container.appendTo(this.palette);
 
-    this.palette.hide();
+    this.changeColor(this.initialColor);
+
     $(document.body).append(this.palette);
 
     this.element.before(this.control);
@@ -118,13 +120,14 @@
   ColorPicker.prototype.destroy = function() {
     this.element.off('.colorPicker');
     $(window).off('colorPicker:addSwatch.' + this.id);
+    this.palette.find('.colorPicker-swatch-container a').off('.colorPicker');
     this.palette.remove();
     this.control.remove();
   };
 
   ColorPicker.prototype.hexFieldKeydown = function(event) {
     if (event.keyCode === 13) {
-      var hexColor = this.toHex($(event.target).val());
+      var hexColor = this.toHex($(event.currentTarget).val());
       this.changeColor(hexColor ? hexColor: this.element.val());
     }
     if (event.keyCode === 27) {
@@ -133,12 +136,14 @@
   };
 
   ColorPicker.prototype.hexFieldKeyup = function(event) {
-    var hexColor = this.toHex($(event.target).val()) || this.element.val();
+    var hexColor = this.toHex($(event.currentTarget).val()) || this.element.val();
     this.previewColor(hexColor, false);
   };
 
   ColorPicker.prototype.createSwatch = function(color) {
-    swatch = this.templates.swatch.clone();
+    var swatchContainer = this.templates.swatch.clone();
+    var swatchLink = swatchContainer.find('a');
+    var swatch = swatchContainer.find('.colorPicker-swatch');
 
     if (color === 'transparent') {
       swatch.text('X');
@@ -146,10 +151,17 @@
     else
       color = this.toHex(color);
 
-    swatch.data('color', color);
+    swatchContainer.attr('data-color', color);
     swatch.css('background', color);
+    swatchLink.on('click.colorPicker', $.proxy(this.swatchLinkClick, this));
 
-    return swatch;
+    return swatchContainer;
+  };
+
+  ColorPicker.prototype.swatchLinkClick = function(event) {
+    event.preventDefault();
+    $(event.currentTarget).trigger('colorPicker:swatchClick');
+    return false;
   };
 
   ColorPicker.prototype.addSwatchClick = function(event) {
@@ -177,22 +189,23 @@
 
   ColorPicker.prototype.controlClick = function(event) {
     if (this.element.not(':disabled')) {
-      this.togglePalette($('#' + this.id), $(event.target));
+      this.togglePalette($('#' + this.id), $(event.currentTarget));
     }
   };
 
   ColorPicker.prototype.inputChange = function(event) {
-    var value = this.toHex($(event.target).val());
+    var value = this.toHex($(event.currentTarget).val());
     this.control.css("background-color", value);
     this.element.trigger('colorPicker:change', value);
   };
 
   ColorPicker.prototype.swatchClick = function(event) {
-    this.changeColor($(event.target).data('color'));
+    var $swatchContainer = $(event.currentTarget);
+    this.changeColor($swatchContainer.attr('data-color'));
   };
 
   ColorPicker.prototype.swatchMouseover = function(event) {
-    this.previewColor($(event.target).data('color'));
+    this.previewColor($(event.currentTarget).attr('data-color'));
   };
 
   ColorPicker.prototype.swatchMouseout = function(event) {
@@ -296,6 +309,9 @@
     this.control.css("background-color", value);
     this.element.val(value).change();
 
+    this.palette.find('.colorPicker-swatch-container.active').removeClass('active');
+    this.palette.find('.colorPicker-swatch-container[data-color=' + value + ']').addClass('active');
+
     this.hidePalette();
   };
 
@@ -323,16 +339,16 @@
     $.each(colors, callback);
     $.each(this.customColors, callback);
 
-    this.palette.on('click.colorPicker', '.colorPicker-swatch', $.proxy(this.swatchClick, this));
-    this.palette.on('mouseover.colorPicker', '.colorPicker-swatch', $.proxy(this.swatchMouseover, this));
-    this.palette.on('mouseout.colorPicker', '.colorPicker-swatch', $.proxy(this.swatchMouseout, this));
+    this.palette.on('colorPicker:swatchClick.colorPicker', '.colorPicker-swatch-container', $.proxy(this.swatchClick, this));
+    this.palette.on('mouseover.colorPicker', '.colorPicker-swatch-container', $.proxy(this.swatchMouseover, this));
+    this.palette.on('mouseout.colorPicker', '.colorPicker-swatch-container', $.proxy(this.swatchMouseout, this));
   };
 
   ColorPicker.prototype.templates = {
     container: $('<div class="colorPicker-addSwatchContainer" />'),
     control: $('<div class="colorPicker-picker add-on">&nbsp;</div>'),
     palette: $('<div class="colorPicker-palette dropdown-menu" />'),
-    swatch : $('<div class="colorPicker-swatch">&nbsp;</div>'),
+    swatch : $('<li class="colorPicker-swatch-container"><a href="#"><div class="colorPicker-swatch">&nbsp;</div></a></li>'),
     hexField: $('<input type="text" class="input-small colorPicker-addSwatchInput" />'),
     addSwatchButton: $('<input type="button" class="btn colorPicker-addSwatchButton" value="add" />')
   };
