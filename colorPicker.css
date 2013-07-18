@@ -38,6 +38,7 @@
   width: 18px;
   display: inline-block;
   border: 1px solid #666;
+  border-radius: 3px;
   margin: 0;
   cursor: pointer;
   line-height: 12px;
